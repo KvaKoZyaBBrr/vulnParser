@@ -11,13 +11,14 @@ public class WorkItem
     private string _hash;
     private string _cweId;
     private string _priority;
+    private string _status;
 
     public WorkItem(Entry entry, Defaults defaults)
     {
         _author = defaults.Author;
         _tags = defaults.Tags;
         _analizer = defaults.Analyzer;
-
+        _status = entry.status;
         _module = entry.file_path.Split("/").FirstOrDefault(x => x.StartsWith(defaults.ModuleMask)) ?? "";
 
         _cweName = entry.cwe_name;
@@ -72,9 +73,13 @@ public class WorkItem
         _priority = $"{priorityName}:{entry.priority}";
     }
 
-    public override string ToString()
+    public bool TryGetString(out string data)
     {
-        return @$",Bug,,""{_cweName}"",""{_author}"",New,""{string.Join(';', _tags)}"",""Статический анализатор выявил программную ошибку в коде модуля {_module}<br><br><b>Описание программной ошибки: </b><br>{_cweName}.<br>{_description}<br><br><b>Расположение: </b><br>{_trace}<br><br><b>Оценка от Security Champion: </b><br>{_comment}"",""Статический анализатор {_analizer}.<br>Хэш программной ошибки: {_hash}<br>Тип ошибки: CWE-{_cweId}<br>Уровень: <b>{_priority}</b><br>""";
+        data = "";
+        if (_status != "new")
+            return false;
+        data = @$",Bug,,""{_cweName}"",""{_author}"",New,""{string.Join(';', _tags)}"",""Статический анализатор выявил программную ошибку в коде модуля {_module}<br><br><b>Описание программной ошибки: </b><br>{_cweName}.<br>{_description}<br><br><b>Расположение: </b><br>{_trace}<br><br><b>Оценка от Security Champion: </b><br>{_comment}"",""Статический анализатор {_analizer}.<br>Хэш программной ошибки: {_hash}<br>Тип ошибки: CWE-{_cweId}<br>Уровень: <b>{_priority}</b><br>""";
+        return true;
     }
 
     private string ReplaceFilePath(string path, IEnumerable<ReplaceTraceValue> replaceTraceValues)

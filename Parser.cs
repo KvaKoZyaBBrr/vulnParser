@@ -39,7 +39,10 @@ public static class Parser
         foreach (var entry in data.Entries)
         {
             var bug = new WorkItem(entry, defaults!);
-            builder.AppendLine(bug.ToString());
+            if (bug.TryGetString(out string str))
+            {
+                builder.AppendLine(str);
+            }
         }
 
         File.WriteAllText(data.Configuration.OutputPath, builder.ToString());
