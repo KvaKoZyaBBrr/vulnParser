@@ -1,0 +1,14 @@
+{
+    "Author" : "",
+    "Tags":[],
+    "Analyzer":"",
+    "ModuleMask":"",
+    "ReplaceTraceValues":
+        [
+            {
+                "Original":"",
+                "ReplaceValue":"",
+                "Suffix":""
+            }
+        ]
+}
