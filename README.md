@@ -4,11 +4,12 @@
 ```
 vulnParser.exe -i D:\defects.csv -o D:\result.csv -g true
 ```
-
+Input:
+```
 -i, --input     Required. Input file.
 -o, --output    Required. Output file.
 -g, --group     Must be group by cwe type. (true/false)
-
+```
 Настроечные файлы:
 - defaults.json
 
