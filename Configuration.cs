@@ -13,7 +13,8 @@ public class Configuration
         public required string OutputPath { get; set; }
 
         [Option('g', "group",
-                HelpText = "Must be group by cwe type.")]
+                Default = "true",
+                HelpText = "Must be group by cwe type.Values: true/false")]
         public string IsGroupConfiguration { get; set; } = "true";
 
         public bool IsGroup => bool.Parse(IsGroupConfiguration);
