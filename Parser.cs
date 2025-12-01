@@ -61,7 +61,7 @@ public static class Parser
                             OutputBugFormat,
                             bugModuleGroup.First().Output.CweName,
                             defaults!.Author,
-                            defaults!.Tags,
+                            string.Join(";", defaults!.Tags),
                             bugModuleGroup.First().Output.Module,
                             bugModuleGroup.First().Output.CweName,
                             bugModuleGroup.First().Output.Description,

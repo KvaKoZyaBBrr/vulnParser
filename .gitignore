@@ -1,2 +1,4 @@
 **/bin
 **/obj
+**/defaults.Development.json
+**/ParentWorkerItem.Development.txt
