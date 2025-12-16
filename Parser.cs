@@ -15,6 +15,7 @@ public static class Parser
     "\"{2}\"," + //Tags
     "\"Статический анализатор выявил программную ошибку в коде модуля {3}<br><br><b>Описание программной ошибки: </b><br>{4}.<br>{5}<br><br><b>Расположение: </b><br>{6}<br><br><b>Оценка от Security Champion: </b><br>{7}\"," + //Repro Steps
     "\"Статический анализатор {8}.<br>Хэш программной ошибки: {9}<br>Тип ошибки: CWE-{10}<br>Уровень: <b>{11}</b><br>\""; //System Info
+
     public static Data Read(Configuration configuration)
     {
         var data = new Data(configuration);
@@ -52,7 +53,7 @@ public static class Parser
 
         if (data.Configuration.IsGroup)
         {
-            foreach (var bugCweIdGroup in bugs.Where(x => x.Output.Status == "new").GroupBy(x => x.Output.CweId))
+            foreach (var bugCweIdGroup in bugs.Where(x => data.Configuration.ProcessedSatuses.Contains(x.Output.Status)).GroupBy(x => x.Output.CweId))
             {
                 foreach (var bugModuleGroup in bugCweIdGroup.GroupBy(x => x.Output.Module))
                 {
@@ -76,7 +77,7 @@ public static class Parser
         }
         else
         {
-            foreach (var bug in bugs.Where(x => x.Output.Status == "new"))
+            foreach (var bug in bugs.Where(x => data.Configuration.ProcessedSatuses.Contains(x.Output.Status)))
             {
                 builder.AppendLine(
                     string.Format(
