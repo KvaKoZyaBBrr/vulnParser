@@ -20,7 +20,12 @@ public class Configuration
         [Option('s', "statuses",
                 Default = "new,confirmed",
                 HelpText = "Статусы, которые будут выгружены")]
-        public string RawProcessedSatuses { get; set; } = "new,confirmed";      
+        public string RawProcessedSatuses { get; set; } = "new,confirmed";
+        
+        [Option('h', "summaryHashFile",
+                Required = false,
+                HelpText = "Файл с хешами от прошлых запусков")]
+        public required string SummaryHashFile { get; set; }
 
         public bool IsGroup => bool.Parse(IsGroupConfiguration);
         public string[] ProcessedSatuses => RawProcessedSatuses.Split(",");

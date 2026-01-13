@@ -50,6 +50,16 @@ public static class Parser
         {
             bugs.Add(new WorkItem(entry, defaults!));
         }
+        var summaryHash = new List<string>();
+        if (!string.IsNullOrEmpty(data.Configuration.SummaryHashFile))
+        {
+            if (!File.Exists(data.Configuration.SummaryHashFile))
+            {
+                throw new FileNotFoundException(data.Configuration.SummaryHashFile);
+            }
+            summaryHash = File.ReadAllLines(data.Configuration.SummaryHashFile).ToList();
+        }
+        var dublicateHash = new List<string>();
 
         if (data.Configuration.IsGroup)
         {
@@ -57,21 +67,44 @@ public static class Parser
             {
                 foreach (var bugModuleGroup in bugCweIdGroup.GroupBy(x => x.Output.Module))
                 {
-                     builder.AppendLine(
+                    var uniqueBugs = new List<WorkItem>();
+                    foreach (var workItem in bugModuleGroup)
+                    {
+                        if (summaryHash.Contains(workItem.Output.Hash))
+                        {
+                            dublicateHash.Add(workItem.Output.Hash);
+                            
+                            // пропущенные случаи, которые помечаются как new, но на них заведены баги
+                            if (workItem.Output.Status == "new" && string.IsNullOrEmpty(workItem.Output.Comment))
+                            {
+                                workItem.Output.Comment = "Не исправлено с прошлого анализа";
+                                uniqueBugs.Add(workItem);
+                            }
+                        }
+                        else
+                        {
+                            summaryHash.Add(workItem.Output.Hash);
+                            uniqueBugs.Add(workItem);
+                        }
+                    }
+                    if (uniqueBugs.Count == 0)
+                        continue;
+
+                    builder.AppendLine(
                         string.Format(
                             OutputBugFormat,
-                            bugModuleGroup.First().Output.CweName,
+                            uniqueBugs.First().Output.CweName,
                             defaults!.Author,
                             string.Join(";", defaults!.Tags),
-                            bugModuleGroup.First().Output.Module,
-                            bugModuleGroup.First().Output.CweName,
-                            bugModuleGroup.First().Output.Description,
-                            string.Join("<hr>", bugModuleGroup.Select((x,i)=>$"{i}. {x.Output.Trace}")),
-                            string.Join("<hr>", bugModuleGroup.Select((x,i)=>$"{i}. {x.Output.Comment}")),
-                            bugModuleGroup.First().Output.Analizer,
-                            string.Join("<hr>", bugModuleGroup.Select((x,i)=>$"{i}. {x.Output.Hash}")),
-                            bugModuleGroup.First().Output.CweId,
-                            bugModuleGroup.First().Output.Priority));
+                            uniqueBugs.First().Output.Module,
+                            uniqueBugs.First().Output.CweName,
+                            uniqueBugs.First().Output.Description,
+                            string.Join("<hr>", uniqueBugs.Select((x,i)=>$"{i}. {x.Output.Trace}")),
+                            string.Join("<hr>", uniqueBugs.Select((x,i)=>$"{i}. {x.Output.Comment}")),
+                            uniqueBugs.First().Output.Analizer,
+                            string.Join("<hr>", uniqueBugs.Select((x,i)=>$"{i}. {x.Output.Hash}")),
+                            uniqueBugs.First().Output.CweId,
+                            uniqueBugs.First().Output.Priority));
                 }
             }
         }
@@ -79,6 +112,15 @@ public static class Parser
         {
             foreach (var bug in bugs.Where(x => data.Configuration.ProcessedSatuses.Contains(x.Output.Status)))
             {
+                if (summaryHash.Contains(bug.Output.Hash))
+                {
+                    dublicateHash.Add(bug.Output.Hash);
+                    continue;
+                }
+                else
+                {
+                    summaryHash.Add(bug.Output.Hash);
+                }
                 builder.AppendLine(
                     string.Format(
                         OutputBugFormat,
@@ -98,6 +140,13 @@ public static class Parser
         }
 
         File.WriteAllText(data.Configuration.OutputPath, builder.ToString());
+        var outputDirectory = Path.GetDirectoryName(data.Configuration.OutputPath);
+        File.WriteAllLines(Path.Combine(outputDirectory!, "summaryHash.txt"), summaryHash);
+        if (dublicateHash.Any())
+        {
+            File.WriteAllLines(Path.Combine(outputDirectory!, "dublicateHash.txt"), dublicateHash);
+        }
+
         return true;
     }
 
